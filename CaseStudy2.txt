@@ -1,0 +1,28 @@
+/* Case Study 2 - MSDS 7333 */
+/* Car MPG Data Set - use SAS PROC MI, PROC MIANALYZE to impute missing values and perform regression */
+/* Some source code from async video examples, prior work performed in Statistics and Doing Data Science */
+
+
+/* Local directory that SAS will reference for Data file, needs to be changed for different computers. #CitrixPain */
+libname remote '\\client\c$\Users\dmurray\Documents\CaseStudy2_MSDS7333';
+
+data carmpg;
+set remote.carmpg;
+RUN;
+PROC PRINT data = carmpg;
+run;
+
+
+/* Baseline Analysis, using PROC REG */
+TITLE 'Predicting MGP';
+PROC REG DATA = CARMPG;
+MODEL MPG = CYLINDERS SIZE HP WEIGHT;
+RUN;
+QUIT;
+
+
+
+PROC MI DATA = CARMPG
+	OUT = MIOUT seed = 12345;
+	VAR CYLINDERS SIZE HP WEIGHT;
+RUN;
