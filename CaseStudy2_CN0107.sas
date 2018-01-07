@@ -1,7 +1,3 @@
-/* Case Study 2 - MSDS 7333 */
-/* Car MPG Data Set - use SAS PROC MI, PROC MIANALYZE to impute missing values and perform regression */
-/* Some source code from async video examples, prior work performed in Statistics and Doing Data Science */
-
 data carmpg;
 infile '\\client\c$\Users\patrickcorynichols\MSDS_QTW\CaseStudy2_MSDS7333\carmpgdata_2_2_2.txt'
 DSD delimiter='09'x firstobs = 2;
@@ -37,3 +33,6 @@ RUN;
 /* model overall significant w/large F & p < .0001 and high expl of variance adj Rsq .875*/
 /* hp, cylinders not significant predictors via t test */
 /* residuals show random pattern */
+
+
+
