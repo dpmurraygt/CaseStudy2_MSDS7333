@@ -27,12 +27,14 @@ run;
 Title 'Predicting MPG Without Imputation';
 PROC REG data = carmpg;
 MODEL MPG = CYLINDERS SIZE HP WEIGHT;
+OUTPUT out = modeldiags
+RSTUDENT = rstudent
+COOKD = cookd;
 RUN;
+QUIT;
 
 /* 16 missing obs deleted and MLR performed */
 /* model overall significant w/large F & p < .0001 and high expl of variance adj Rsq .875*/
 /* hp, cylinders not significant predictors via t test */
 /* residuals show random pattern */
-
-
-
+/* Fiat strada has high influence */
