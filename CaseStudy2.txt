@@ -1,7 +1,3 @@
-/* Case Study 2 - MSDS 7333 */
-/* Car MPG Data Set - use SAS PROC MI, PROC MIANALYZE to impute missing values and perform regression */
-/* Some source code from async video examples, prior work performed in Statistics and Doing Data Science */
-
 data carmpg;
 infile '\\client\c$\Users\patrickcorynichols\MSDS_QTW\CaseStudy2_MSDS7333\carmpgdata_2_2_2.txt'
 DSD delimiter='09'x DSD missover firstobs = 2;
@@ -48,6 +44,8 @@ QUIT;
 /* Fiat strada has high influence */
 /* no need for transforms per instructions*/
 
+
+Title 'Identifying Missing Patterns';
 ODS SELECT MISSPATTERN;
 PROC MI data = carmpg seed = 100 nimpute = 0;
 VAR CYLINDERS SIZE HP WEIGHT ACCEL ENG_TYPE;
@@ -56,11 +54,18 @@ RUN;
 QUIT;
 
 /* arbitrary pattern */
-/* proc MI default is MCMC but explicitly calling */
+/* proc MI default is MCMC but explicitly calling below given arbitrary pattern*/
 /* MCMC uses EM to prime estimates with more accurate covariance and mean estimates*/
-/* MCMC uses random walks via Markov chain(s) to build a fair sample distribution that is sampled from to estimate imputed values
-values typically based on likelihood estimates of the dataset with selected imputes */
+/* MCMC then uses random walks (Markov chain(s)) to build a fair sample distribution (posterior) that is 
+sampled from to estimate imputed values */
+/* in this case we can utilize MCMC to generate imputed values based on dataset parameters estimated from
+EM, e.g. covariance and vector means, that iterate over a complete chain to form a stationary distribution
+form the posterior which can be sampled from to get our imputed values*/
+/* can also update parameters for regression after a number of runs using parameters such as covariance and
+markov chains, take betas, make prediction, average at end with Rubin's rules */
 
+
+Title 'Created Imputed Datasets';
 PROC MI data = carmpg OUT = MIOUT seed = 100 nimpute = 5;
 VAR CYLINDERS SIZE HP WEIGHT ACCEL ENG_TYPE;
 MCMC;
@@ -71,10 +76,21 @@ QUIT;
 PROC PRINT data = miout;
 RUN;
 
+
+Title 'Regressing on Each Imputed Dataset';
 PROC REG data = miout outest = outreg covout;
 MODEL MPG = CYLINDERS SIZE HP WEIGHT ACCEL ENG_TYPE;
 BY _IMPUTATION_;
 RUN;
 QUIT;
 
+
+Title 'Combining Parameters According to Rubins Rules';
 /* analyze outputs vs listwise */
+
+PROC MIANALYZE data = outreg;
+MODELEFFECTS CYLINDERS SIZE HP WEIGHT ACCEL ENG_TYPE Intercept;
+RUN;
+
+/* weight and eng_type parameters vastly different */
+/* weight had > 29% missing values */
