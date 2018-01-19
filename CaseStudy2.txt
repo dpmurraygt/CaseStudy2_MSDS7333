@@ -8,7 +8,11 @@ run;
 PROC PRINT data = carmpg;
 RUN;
 
-PROC MEANS STD CLM Q1 MEDIAN Q3;
+PROC MEANS data = carmpg MEAN NMISS N STD STDERR CLM Q1 MEDIAN Q3;
+VAR MPG CYLINDERS SIZE HP WEIGHT ACCEL ENG_TYPE;
+RUN;
+
+PROC MEANS data = carmpg MEAN NMISS N STD CLM Q1 MEDIAN Q3;
 VAR MPG CYLINDERS SIZE HP WEIGHT ACCEL;
 CLASS ENG_TYPE;
 RUN;
@@ -28,7 +32,7 @@ PROC CORR data = carmpg;
 RUN;
 
 
-Title 'Predicting MPG Without Imputation';
+Title 'Predicting MPG: Listwise Deletion Imputation';
 PROC REG data = carmpg;
 MODEL MPG = CYLINDERS SIZE HP WEIGHT ACCEL ENG_TYPE;
 OUTPUT out = modeldiags
@@ -37,7 +41,7 @@ COOKD = cookd;
 RUN;
 QUIT;
 
-/* 16 missing obs deleted and MLR performed */
+/* 20 missing obs deleted and MLR performed on 18 observations */
 /* model overall significant w/large F & p < .0001 and high expl of variance adj Rsq .875*/
 /* hp, cylinders not significant predictors via t test */
 /* residuals show random pattern */
@@ -65,15 +69,23 @@ form the posterior which can be sampled from to get our imputed values*/
 markov chains, take betas, make prediction, average at end with Rubin's rules */
 
 
-Title 'Created Imputed Datasets';
+Title 'Create Imputed Datasets';
 PROC MI data = carmpg OUT = MIOUT seed = 100 nimpute = 5;
 VAR CYLINDERS SIZE HP WEIGHT ACCEL ENG_TYPE;
 MCMC;
 RUN;
 QUIT;
 
+PROC PRINT data = mitout;
+RUN;
+
+/* Take a look at effects */
+PROC SORT data = miout;
+BY auto;
+RUN;
 
 PROC PRINT data = miout;
+BY  auto;
 RUN;
 
 
